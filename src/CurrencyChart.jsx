@@ -11,6 +11,7 @@ import {
     Filler
 } from 'chart.js';
 import './CurrencyChart.css';
+import { callback } from "chart.js/helpers";
 
 ChartJS.register(
     CategoryScale,
@@ -23,6 +24,13 @@ ChartJS.register(
     Filler
 );
 
+const formatValue = (val) => {
+    if (val === null || val === undefined) return '';
+    return val > 0.01
+        ? val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })
+        : val.toFixed(6);
+};
+
 export default function CurrencyChart({ data, fromCurrency, toCurrency }) {
     if (!data || data.length === 0) {
         return (
@@ -33,7 +41,7 @@ export default function CurrencyChart({ data, fromCurrency, toCurrency }) {
     }
 
     const labels = data.map(item => item.date);
-    const rateData = data.map(item => item.rates[toCurrency]);
+    const rateData = data.map(item => item.rates[toCurrency] / item.rates[fromCurrency]);
 
     const chartData = {
         labels: labels,
@@ -110,8 +118,9 @@ export default function CurrencyChart({ data, fromCurrency, toCurrency }) {
                     font: {
                         family: "'Inter', sans-serif",
                         size: 10
-                    }
-                }
+                    },
+                    callback: (value) => formatValue(value)
+                },
             }
         }
     };
