@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from 'react'
 import './App.css'
 import CurrencySelect from './CurrencySelect'
 import useCurrencyRates from './hooks/useCurrencyRates';
+import CurrencyChart from './CurrencyChart';
 
 const DEFAULT_MAPPING = {
   "USD": 1,
@@ -19,7 +20,7 @@ export function CurrencyConverter() {
 
   const { data: rates, error, isLoading } = useCurrencyRates()
 
-  const CURRENCY_MAPPING = rates || DEFAULT_MAPPING
+  const CURRENCY_MAPPING = rates ? rates[rates.length - 1].rates : DEFAULT_MAPPING
   const ARRAY_MAPPING = Object.keys(CURRENCY_MAPPING)
 
   const convertedAmount = useMemo(() => {
@@ -39,11 +40,16 @@ export function CurrencyConverter() {
     maximumFractionDigits: 2
   })
 
+  const swapValue = () => {
+    setFromCurr(toCurr)
+    setToCurr(fromCurr)
+  }
+
   return (
     <div className="converter-card">
       <div className="card-header">
         <h1 className="title">Currency Converter</h1>
-        <p className="subtitle">Real-time exchange rates</p>
+        <p className="subtitle">Daily exchange rates</p>
       </div>
 
       <div className="input-section">
@@ -55,7 +61,7 @@ export function CurrencyConverter() {
 
       <div className="selectors-container">
         <CurrencySelect title='From' mapping={ARRAY_MAPPING} val={fromCurr} setter={setFromCurr} />
-        <div className="swap-icon">
+        <div className="swap-icon" onClick={swapValue}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 3-4 4 4 4" /><path d="M20 7H4" /><path d="m8 21 4-4-4-4" /><path d="M4 17h16" /></svg>
         </div>
         <CurrencySelect title='To' mapping={ARRAY_MAPPING} val={toCurr} setter={setToCurr} />
@@ -67,6 +73,8 @@ export function CurrencyConverter() {
           {formattedResult} <span className="result-currency">{toCurr}</span>
         </h2>
       </div>
+
+      <CurrencyChart data={rates} fromCurrency={fromCurr} toCurrency={toCurr} />
     </div>
   );
 }
